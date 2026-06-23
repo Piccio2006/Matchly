@@ -10,9 +10,10 @@ interface SocialLoginButtonProps {
   provider: 'google' | 'apple'
   label: string
   onPress: () => void
+  disabled?: boolean
 }
 
-export function SocialLoginButton({ provider, label, onPress }: SocialLoginButtonProps) {
+export function SocialLoginButton({ provider, label, onPress, disabled = false }: SocialLoginButtonProps) {
   const { scale, onPressIn, onPressOut } = usePressAnimation()
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
 
@@ -21,7 +22,13 @@ export function SocialLoginButton({ provider, label, onPress }: SocialLoginButto
       onPress={onPress}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
-      style={[animatedStyle, styles.button, provider === 'apple' ? styles.apple : styles.google]}
+      disabled={disabled}
+      style={[
+        animatedStyle,
+        styles.button,
+        provider === 'apple' ? styles.apple : styles.google,
+        disabled && styles.disabled,
+      ]}
     >
       <View style={styles.inner}>
         <Text style={styles.icon}>{provider === 'apple' ? '🍎' : '🔵'}</Text>
@@ -46,6 +53,9 @@ const styles = StyleSheet.create({
   },
   apple: {
     backgroundColor: '#000',
+  },
+  disabled: {
+    opacity: 0.5,
   },
   inner: {
     flexDirection: 'row',

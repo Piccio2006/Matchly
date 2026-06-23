@@ -1,25 +1,42 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, Pressable, ScrollView, Platform } from 'react-native'
+import { View, Text, StyleSheet, Pressable, ScrollView, Platform, Alert } from 'react-native'
 import { router } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { AuthForm } from '../../components/features/auth/AuthForm'
 import { SocialLoginButton } from '../../components/features/auth/SocialLoginButton'
-import { colors, spacing, typography } from '../../lib/theme'
+import { colors, radius, spacing, typography } from '../../lib/theme'
 import { useAuth } from '../../hooks/useAuth'
+import { isSupabaseConfigured } from '../../lib/supabase'
 
 export default function SignupScreen() {
   const { t } = useTranslation()
   const { signUpWithEmail } = useAuth()
+  const insets = useSafeAreaInsets()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
+
+  const showComingSoon = () => {
+    Alert.alert(t('common.coming_soon'), t('auth.social_coming_soon'))
+  }
 
   const handleSignup = async (email: string, password: string) => {
     setError('')
+    setMessage('')
+    if (!isSupabaseConfigured) {
+      setError(t('auth.supabase_not_configured'))
+      return
+    }
+
     setLoading(true)
     try {
-      await signUpWithEmail(email, password)
-    } catch {
-      setError(t('auth.signup_error'))
+      const data = await signUpWithEmail(email, password)
+      if (!data.session) {
+        setMessage(t('auth.check_email'))
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('auth.signup_error'))
     } finally {
       setLoading(false)
     }
@@ -28,13 +45,23 @@ export default function SignupScreen() {
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={styles.container}
+      contentContainerStyle={[styles.container, { paddingTop: insets.top + spacing.lg }]}
       keyboardShouldPersistTaps="handled"
     >
+      <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <Text style={styles.backText}>← {t('common.back')}</Text>
+      </Pressable>
+
       <Text style={styles.title}>{t('auth.signup')}</Text>
       <Text style={styles.subtitle}>{t('auth.welcome_subtitle')}</Text>
 
       <View style={styles.form}>
+        {message ? (
+          <View style={styles.infoBanner}>
+            <Text style={styles.infoText}>{message}</Text>
+          </View>
+        ) : null}
+
         <AuthForm mode="signup" onSubmit={handleSignup} loading={loading} error={error} />
 
         <View style={styles.separator}>
@@ -45,14 +72,16 @@ export default function SignupScreen() {
 
         <SocialLoginButton
           provider="google"
-          label={t('auth.continue_google')}
-          onPress={() => {}}
+          label={`${t('auth.continue_google')} · ${t('common.soon')}`}
+          onPress={showComingSoon}
+          disabled
         />
         {Platform.OS === 'ios' && (
           <SocialLoginButton
             provider="apple"
-            label={t('auth.continue_apple')}
-            onPress={() => {}}
+            label={`${t('auth.continue_apple')} · ${t('common.soon')}`}
+            onPress={showComingSoon}
+            disabled
           />
         )}
 
@@ -71,12 +100,26 @@ const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: colors.background },
   container: {
     padding: spacing.lg,
-    paddingTop: 80,
     gap: spacing.sm,
+    paddingBottom: spacing.xxl,
   },
+  backBtn: { marginBottom: spacing.sm },
+  backText: { ...typography.bodySmall, color: colors.primary, fontFamily: 'Inter_600SemiBold' },
   title: { ...typography.h1 },
   subtitle: { ...typography.body, color: colors.textSecondary },
   form: { marginTop: spacing.lg, gap: spacing.md },
+  infoBanner: {
+    backgroundColor: colors.primaryLight,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.primaryMedium,
+    padding: spacing.md,
+  },
+  infoText: {
+    ...typography.bodySmall,
+    color: colors.primaryDark,
+    fontFamily: 'Inter_600SemiBold',
+  },
   separator: {
     flexDirection: 'row',
     alignItems: 'center',

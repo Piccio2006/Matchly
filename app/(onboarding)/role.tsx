@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native'
+import { View, Text, StyleSheet, Pressable, Alert, ScrollView } from 'react-native'
 import { router } from 'expo-router'
 import { useTranslation } from 'react-i18next'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -67,12 +68,18 @@ function RoleCard({
 export default function OnboardingRoleScreen() {
   const { t } = useTranslation()
   const { user, setProfile } = useAuthStore()
+  const insets = useSafeAreaInsets()
   const [selectedRole, setSelectedRole] = useState<Role | null>(null)
   const [loading, setLoading] = useState(false)
 
   const handleComplete = async () => {
+    if (!user?.id) {
+      Alert.alert(t('common.error'), t('auth.login_required'))
+      return
+    }
+
     if (!selectedRole) {
-      Alert.alert(t('common.error'), 'Seleziona un ruolo')
+      Alert.alert(t('common.error'), t('onboarding.select_role'))
       return
     }
 
@@ -80,7 +87,7 @@ export default function OnboardingRoleScreen() {
     const { data, error } = await supabase
       .from('profiles')
       .update({ preferred_role: selectedRole, onboarding_completed: true })
-      .eq('id', user?.id)
+      .eq('id', user.id)
       .select()
       .single()
 
@@ -97,14 +104,18 @@ export default function OnboardingRoleScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <ProgressBar current={3} total={3} />
         <Text style={styles.stepLabel}>{t('onboarding.step', { current: 3, total: 3 })}</Text>
         <Text style={styles.title}>{t('onboarding.role_title')}</Text>
         <Text style={styles.subtitle}>{t('onboarding.role_subtitle')}</Text>
       </View>
 
-      <View style={styles.grid}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.grid}
+        showsVerticalScrollIndicator={false}
+      >
         {ROLES.map(({ key, emoji }) => (
           <RoleCard
             key={key}
@@ -114,9 +125,9 @@ export default function OnboardingRoleScreen() {
             onSelect={() => setSelectedRole(key)}
           />
         ))}
-      </View>
+      </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
         <Button
           label={t('onboarding.complete')}
           onPress={handleComplete}
@@ -131,14 +142,15 @@ export default function OnboardingRoleScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: spacing.lg, paddingTop: 60, gap: spacing.sm },
+  header: { padding: spacing.lg, paddingTop: 0, gap: spacing.sm },
   stepLabel: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.sm },
   title: { ...typography.h2 },
   subtitle: { ...typography.body, color: colors.textSecondary },
+  scroll: { flex: 1 },
   grid: {
-    flex: 1,
     padding: spacing.lg,
     gap: spacing.md,
+    paddingBottom: 120,
   },
   card: {
     backgroundColor: colors.surface,
@@ -159,7 +171,7 @@ const styles = StyleSheet.create({
   roleDesc: { ...typography.bodySmall, textAlign: 'center' },
   footer: {
     padding: spacing.lg,
-    paddingBottom: 40,
+    paddingBottom: 0,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     backgroundColor: colors.background,

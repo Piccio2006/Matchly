@@ -6,7 +6,9 @@
     "skip": "Skip",
     "loading": "Loading...",
     "error": "Something went wrong",
-    "retry": "Retry"
+    "retry": "Retry",
+    "coming_soon": "Coming soon",
+    "soon": "soon"
   },
   "auth": {
     "welcome_title": "Welcome to Matchly",
@@ -24,8 +26,15 @@
     "already_account": "Already have an account?",
     "no_account": "Don't have an account?",
     "passwords_no_match": "Passwords do not match",
+    "fill_email_password": "Enter email and password",
     "login_error": "Invalid email or password",
-    "signup_error": "Error during sign up"
+    "signup_error": "Error during sign up",
+    "check_email": "Sign up received. Check your email to confirm the account, then come back and log in.",
+    "invalid_email": "Enter a valid email address",
+    "login_required": "You need to log in before completing your profile",
+    "supabase_not_configured": "Supabase is not configured yet. Add the real URL and anon key to .env.local, then restart the app.",
+    "social_coming_soon": "Google and Apple will be connected in the next technical pass. For now, use email and password.",
+    "forgot_coming_soon": "Password recovery will be enabled together with the full Supabase Auth setup."
   },
   "onboarding": {
     "step": "{{current}} of {{total}}",
@@ -41,7 +50,10 @@
     "role_subtitle": "The role you prefer to play",
     "complete": "Start playing",
     "username_taken": "Username already taken",
-    "select_sport": "Select at least one sport"
+    "select_sport": "Select at least one sport",
+    "fill_all_fields": "Please fill in all required fields",
+    "add_photo": "Add photo",
+    "select_role": "Select a role to continue"
   },
   "sports": {
     "calcetto": "5-a-side",
@@ -98,6 +110,8 @@
   },
   "profile": {
     "my_score": "My score",
+    "my_stats": "Statistics",
+    "logout_confirm": "Do you want to log out?",
     "matches_played": "Matches played",
     "attendance": "Attendance",
     "my_bookings": "My bookings",

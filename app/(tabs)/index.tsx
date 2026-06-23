@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -39,14 +40,18 @@ function getGreeting(t: (key: string) => string) {
 export default function HomeScreen() {
   const { t } = useTranslation()
   const { profile } = useUser()
-  const firstName = profile?.full_name?.split(' ')[0] ?? ''
+  const insets = useSafeAreaInsets()
+  const firstName = profile?.full_name?.split(' ')[0]
+  const greetingText = firstName
+    ? `${getGreeting(t)}, ${firstName} 👋`
+    : `${getGreeting(t)} 👋`
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.scroll} contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.greeting}>{getGreeting(t)}, {firstName} 👋</Text>
+            <Text style={styles.greeting}>{greetingText}</Text>
             <View style={styles.cityRow}>
               <Text style={styles.cityDot}>●</Text>
               <Text style={styles.city}>{profile?.city ?? 'La tua città'}</Text>
@@ -85,7 +90,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingTop: 60, paddingBottom: 32, gap: spacing.lg },
+  content: { padding: spacing.lg, paddingBottom: 32, gap: spacing.lg },
   header: { gap: spacing.sm },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   greeting: { ...typography.h2, color: colors.textPrimary },

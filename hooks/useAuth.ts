@@ -6,8 +6,9 @@ export function useAuth() {
   const { session, user, profile, isLoading, setSession, setProfile, setStats, reset } = useAuthStore()
 
   const signUpWithEmail = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) throw error
+    return data
   }, [])
 
   const signInWithEmail = useCallback(async (email: string, password: string) => {

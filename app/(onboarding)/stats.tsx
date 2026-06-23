@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native'
 import { router } from 'expo-router'
 import { useTranslation } from 'react-i18next'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StatSlider } from '../../components/ui/StatSlider'
 import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
@@ -10,7 +11,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../stores/authStore'
 import { StatKey } from '../../types'
 
-const STATS: StatKey[] = [
+const STATS = [
   { key: 'velocita', labelIt: 'Velocità', labelEn: 'Speed', emoji: '⚡' },
   { key: 'resistenza', labelIt: 'Resistenza', labelEn: 'Stamina', emoji: '🫀' },
   { key: 'tecnica', labelIt: 'Tecnica', labelEn: 'Technique', emoji: '🎯' },
@@ -19,9 +20,10 @@ const STATS: StatKey[] = [
   { key: 'fairplay', labelIt: 'Fairplay', labelEn: 'Fair Play', emoji: '🤝' },
   { key: 'leadership', labelIt: 'Leadership', labelEn: 'Leadership', emoji: '👑' },
   { key: 'carisma', labelIt: 'Carisma', labelEn: 'Charisma', emoji: '✨' },
-]
+] satisfies StatKey[]
 
-type StatsValues = Record<StatKey['key'], number>
+type OnboardingStatKey = (typeof STATS)[number]['key']
+type StatsValues = Record<OnboardingStatKey, number>
 
 const defaultStats: StatsValues = {
   velocita: 5.0,
@@ -37,28 +39,34 @@ const defaultStats: StatsValues = {
 export default function OnboardingStatsScreen() {
   const { t } = useTranslation()
   const { user, setStats } = useAuthStore()
+  const insets = useSafeAreaInsets()
   const [values, setValues] = useState<StatsValues>(defaultStats)
   const [loading, setLoading] = useState(false)
 
-  const handleChange = (key: StatKey['key'], value: number) => {
+  const handleChange = (key: OnboardingStatKey, value: number) => {
     setValues((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleContinue = async () => {
+    if (!user?.id) {
+      Alert.alert(t('common.error'), t('auth.login_required'))
+      return
+    }
+
     setLoading(true)
-    const avg = Object.values(values).reduce((a, b) => a + b, 0) / 8
+    const avg = Object.values(values).reduce((a, b) => a + b, 0) / STATS.length
     const matchly_score = Math.round(avg * 10) / 10
 
     const level =
-      matchly_score >= 9 ? 'elite' :
-      matchly_score >= 7.5 ? 'platinum' :
+      matchly_score >= 9.5 ? 'elite' :
+      matchly_score >= 8 ? 'platinum' :
       matchly_score >= 6 ? 'gold' :
-      matchly_score >= 4.5 ? 'silver' : 'bronze'
+      matchly_score >= 4 ? 'silver' : 'bronze'
 
     const { data, error } = await supabase
       .from('player_stats')
       .upsert({
-        player_id: user?.id,
+        player_id: user.id,
         ...values,
         matchly_score,
         level,
@@ -79,7 +87,7 @@ export default function OnboardingStatsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <ProgressBar current={2} total={3} />
         <Text style={styles.stepLabel}>{t('onboarding.step', { current: 2, total: 3 })}</Text>
         <Text style={styles.title}>{t('onboarding.stats_title')}</Text>
@@ -98,7 +106,7 @@ export default function OnboardingStatsScreen() {
         ))}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
         <Button label={t('common.continue')} onPress={handleContinue} loading={loading} fullWidth />
       </View>
     </View>
@@ -107,7 +115,7 @@ export default function OnboardingStatsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: spacing.lg, paddingTop: 60, gap: spacing.sm },
+  header: { padding: spacing.lg, paddingTop: 0, gap: spacing.sm },
   stepLabel: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.sm },
   title: { ...typography.h2 },
   subtitle: { ...typography.body, color: colors.textSecondary },

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet, TextInput, Alert } from 'react-native'
+import { View, Text, StyleSheet, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -16,6 +16,7 @@ import { supabase } from '../../lib/supabase'
 import { useUser } from '../../hooks/useUser'
 
 const NUM_PARTICLES = 12
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function Particle({ index }: { index: number }) {
   const x = useSharedValue(Math.random() * 300 - 150)
@@ -73,7 +74,7 @@ function Particle({ index }: { index: number }) {
 export default function MatchScreen() {
   const { t } = useTranslation()
   const { profile } = useUser()
-  const [email, setEmail] = useState(profile ? '' : '')
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [joined, setJoined] = useState(false)
   const [count, setCount] = useState(0)
@@ -86,27 +87,36 @@ export default function MatchScreen() {
   }, [])
 
   const handleJoin = async () => {
-    if (!email.trim()) return
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!EMAIL_RE.test(normalizedEmail)) {
+      Alert.alert(t('common.error'), t('auth.invalid_email'))
+      return
+    }
+
     setLoading(true)
 
     const { error } = await supabase.from('matchmaking_waitlist').upsert({
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       player_id: profile?.id ?? null,
       city: profile?.city ?? null,
     })
 
     setLoading(false)
-    if (error && !error.message.includes('unique')) {
+    const isDuplicate = error?.message?.includes('unique') || error?.code === '23505'
+    if (error && !isDuplicate) {
       Alert.alert(t('common.error'), error.message)
       return
     }
 
     setJoined(true)
-    setCount((c) => c + 1)
+    if (!isDuplicate) setCount((c) => c + 1)
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <View style={styles.particles} pointerEvents="none">
         {Array.from({ length: NUM_PARTICLES }).map((_, i) => (
           <Particle key={i} index={i} />
@@ -149,7 +159,7 @@ export default function MatchScreen() {
           </View>
         )}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 

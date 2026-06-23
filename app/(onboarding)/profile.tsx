@@ -5,6 +5,7 @@ import {
 import { router } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import * as ImagePicker from 'expo-image-picker'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Input } from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import { ProgressBar } from '../../components/ui/ProgressBar'
@@ -18,6 +19,7 @@ const SPORTS: Sport[] = ['calcetto', 'calciotto', 'padel', 'tennis']
 export default function OnboardingProfileScreen() {
   const { t } = useTranslation()
   const { user, setProfile } = useAuthStore()
+  const insets = useSafeAreaInsets()
 
   const [fullName, setFullName] = useState('')
   const [username, setUsername] = useState('')
@@ -46,8 +48,13 @@ export default function OnboardingProfileScreen() {
   }
 
   const handleContinue = async () => {
+    if (!user?.id) {
+      Alert.alert(t('common.error'), t('auth.login_required'))
+      return
+    }
+
     if (!fullName.trim() || !username.trim() || !city.trim()) {
-      Alert.alert(t('common.error'), 'Compila tutti i campi')
+      Alert.alert(t('common.error'), t('onboarding.fill_all_fields'))
       return
     }
     if (selectedSports.length === 0) {
@@ -72,7 +79,7 @@ export default function OnboardingProfileScreen() {
     }
 
     const profileData = {
-      id: user?.id,
+      id: user.id,
       full_name: fullName.trim(),
       username: username.toLowerCase().trim(),
       city: city.trim(),
@@ -100,7 +107,7 @@ export default function OnboardingProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + spacing.md }]}>
         <ProgressBar current={1} total={3} />
         <Text style={styles.stepLabel}>{t('onboarding.step', { current: 1, total: 3 })}</Text>
         <Text style={styles.title}>{t('onboarding.profile_title')}</Text>
@@ -114,7 +121,7 @@ export default function OnboardingProfileScreen() {
           ) : (
             <View style={styles.avatarPlaceholder}>
               <Text style={styles.cameraIcon}>📷</Text>
-              <Text style={styles.avatarHint}>Aggiungi foto</Text>
+              <Text style={styles.avatarHint}>{t('onboarding.add_photo')}</Text>
             </View>
           )}
         </Pressable>
@@ -162,7 +169,7 @@ export default function OnboardingProfileScreen() {
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
         <Button label={t('common.continue')} onPress={handleContinue} loading={loading} fullWidth />
       </View>
     </View>
@@ -171,7 +178,7 @@ export default function OnboardingProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { padding: spacing.lg, paddingTop: 60, gap: spacing.sm },
+  header: { padding: spacing.lg, paddingTop: 0, gap: spacing.sm },
   stepLabel: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.sm },
   title: { ...typography.h2 },
   subtitle: { ...typography.body, color: colors.textSecondary },

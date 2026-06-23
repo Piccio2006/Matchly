@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
-import { View, Text, StyleSheet, Pressable } from 'react-native'
+import { Platform, View, Text, StyleSheet, Pressable } from 'react-native'
 import { router } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -12,23 +13,25 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '../../components/ui/Button'
 import { colors, spacing, typography, springs } from '../../lib/theme'
 
+const isWeb = Platform.OS === 'web'
+
 export default function WelcomeScreen() {
   const { t } = useTranslation()
+  const insets = useSafeAreaInsets()
 
-  const logoY = useSharedValue(-60)
-  const logoOpacity = useSharedValue(0)
-  const btn1Y = useSharedValue(40)
-  const btn1Opacity = useSharedValue(0)
-  const btn2Y = useSharedValue(40)
-  const btn2Opacity = useSharedValue(0)
+  const logoY = useSharedValue(isWeb ? 0 : -60)
+  const logoOpacity = useSharedValue(isWeb ? 1 : 0)
+  const btn1Y = useSharedValue(isWeb ? 0 : 40)
+  const btn1Opacity = useSharedValue(isWeb ? 1 : 0)
+  const btn2Y = useSharedValue(isWeb ? 0 : 40)
+  const btn2Opacity = useSharedValue(isWeb ? 1 : 0)
 
   useEffect(() => {
+    if (isWeb) return
     logoY.value = withSpring(0, springs.gentle)
     logoOpacity.value = withTiming(1, { duration: 400 })
-
     btn1Y.value = withDelay(300, withSpring(0, springs.gentle))
     btn1Opacity.value = withDelay(300, withTiming(1, { duration: 300 }))
-
     btn2Y.value = withDelay(500, withSpring(0, springs.gentle))
     btn2Opacity.value = withDelay(500, withTiming(1, { duration: 300 }))
   }, [])
@@ -49,13 +52,11 @@ export default function WelcomeScreen() {
   }))
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 40, paddingBottom: Math.max(insets.bottom, spacing.xl) }]}>
       <View style={styles.logoSection}>
-        <Animated.View style={logoStyle}>
+        <Animated.View style={[logoStyle, styles.logoInner]}>
           <Text style={styles.logo}>Matchly</Text>
-          <Text style={styles.tagline}>
-            {t('auth.welcome_subtitle')}
-          </Text>
+          <Text style={styles.tagline}>{t('auth.welcome_subtitle')}</Text>
           <Text style={styles.slogan}>Prenota. Gioca. Vinci.</Text>
         </Animated.View>
       </View>
@@ -86,12 +87,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
     justifyContent: 'space-between',
-    paddingTop: 100,
-    paddingBottom: 60,
   },
   logoSection: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoInner: {
     alignItems: 'center',
   },
   logo: {
@@ -124,9 +126,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  secondaryText: {
-    ...typography.bodySmall,
-  },
+  secondaryText: { ...typography.bodySmall },
   link: {
     ...typography.bodySmall,
     color: colors.primary,

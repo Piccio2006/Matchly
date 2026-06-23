@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Avatar } from '../../components/ui/Avatar'
 import { MatchlyScoreBadge } from '../../components/features/profile/MatchlyScoreBadge'
 import { useUser } from '../../hooks/useUser'
@@ -9,17 +10,18 @@ import { colors, spacing, typography, radius } from '../../lib/theme'
 import { Level } from '../../types'
 
 const STAT_KEYS = ['velocita', 'resistenza', 'tecnica', 'fisico'] as const
-const STAT_LABELS: Record<string, string> = {
-  velocita: '⚡ Velocità',
-  resistenza: '🫀 Resistenza',
-  tecnica: '🎯 Tecnica',
-  fisico: '💪 Fisico',
+const STAT_EMOJIS: Record<string, string> = {
+  velocita: '⚡',
+  resistenza: '🫀',
+  tecnica: '🎯',
+  fisico: '💪',
 }
 
 export default function ProfileScreen() {
   const { t } = useTranslation()
   const { profile, stats } = useUser()
   const { signOut } = useAuth()
+  const insets = useSafeAreaInsets()
 
   const attendance =
     stats && stats.total_matches > 0
@@ -27,14 +29,14 @@ export default function ProfileScreen() {
       : 0
 
   const handleLogout = () => {
-    Alert.alert(t('profile.logout'), 'Vuoi uscire dall\'app?', [
+    Alert.alert(t('profile.logout'), t('profile.logout_confirm'), [
       { text: t('common.back'), style: 'cancel' },
       { text: t('profile.logout'), style: 'destructive', onPress: signOut },
     ])
   }
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.scroll} contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <Avatar uri={profile?.avatar_url} name={profile?.full_name} size={80} />
         <View style={styles.nameBlock}>
@@ -66,14 +68,14 @@ export default function ProfileScreen() {
 
       {stats && (
         <View style={styles.statsSection}>
-          <Text style={styles.sectionLabel}>Statistiche</Text>
+          <Text style={styles.sectionLabel}>{t('profile.my_stats')}</Text>
           <View style={styles.statBars}>
             {STAT_KEYS.map((key) => {
               const val = stats[key] as number
               const pct = (val / 10) * 100
               return (
                 <View key={key} style={styles.statRow}>
-                  <Text style={styles.statLabel}>{STAT_LABELS[key]}</Text>
+                  <Text style={styles.statLabel}>{STAT_EMOJIS[key]} {t(`stats.${key}`)}</Text>
                   <View style={styles.barTrack}>
                     <View style={[styles.barFill, { width: `${pct}%` }]} />
                   </View>
@@ -114,7 +116,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingTop: 60, paddingBottom: 48, gap: spacing.xl },
+  content: { padding: spacing.lg, paddingBottom: 48, gap: spacing.xl },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   nameBlock: { flex: 1, gap: 2 },
   name: { ...typography.h2 },

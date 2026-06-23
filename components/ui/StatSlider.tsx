@@ -1,5 +1,5 @@
-import React from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import React, { useState } from 'react'
+import { View, Text, StyleSheet, LayoutChangeEvent } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   useSharedValue,
@@ -15,7 +15,6 @@ interface StatSliderProps {
   onChange: (value: number) => void
 }
 
-const TRACK_WIDTH = 200
 const THUMB_SIZE = 24
 const MIN = 1
 const MAX = 10
@@ -32,12 +31,24 @@ function snapToStep(val: number, step: number) {
 }
 
 export function StatSlider({ label, emoji, value, onChange }: StatSliderProps) {
-  const initialX = ((value - MIN) / (MAX - MIN)) * TRACK_WIDTH
+  const [trackWidth, setTrackWidth] = useState(200)
+  const trackWidthShared = useSharedValue(200)
+
+  const initialX = ((value - MIN) / (MAX - MIN)) * trackWidth
   const thumbX = useSharedValue(initialX)
   const startX = useSharedValue(initialX)
 
-  const updateValue = (x: number) => {
-    const ratio = x / TRACK_WIDTH
+  const onTrackLayout = (e: LayoutChangeEvent) => {
+    const w = e.nativeEvent.layout.width
+    setTrackWidth(w)
+    trackWidthShared.value = w
+    // Reposition thumb to match current value on layout
+    thumbX.value = ((value - MIN) / (MAX - MIN)) * w
+    startX.value = thumbX.value
+  }
+
+  const updateValue = (x: number, tw: number) => {
+    const ratio = x / tw
     const raw = MIN + ratio * (MAX - MIN)
     const snapped = snapToStep(clamp(raw, MIN, MAX), STEP)
     onChange(Math.round(snapped * 10) / 10)
@@ -48,9 +59,10 @@ export function StatSlider({ label, emoji, value, onChange }: StatSliderProps) {
       startX.value = thumbX.value
     })
     .onUpdate((e) => {
-      const next = clamp(startX.value + e.translationX, 0, TRACK_WIDTH)
+      const tw = trackWidthShared.value
+      const next = clamp(startX.value + e.translationX, 0, tw)
       thumbX.value = next
-      runOnJS(updateValue)(next)
+      runOnJS(updateValue)(next, tw)
     })
 
   const thumbStyle = useAnimatedStyle(() => ({
@@ -65,9 +77,9 @@ export function StatSlider({ label, emoji, value, onChange }: StatSliderProps) {
     <View style={styles.row}>
       <View style={styles.labelContainer}>
         <Text style={styles.emoji}>{emoji}</Text>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.label} numberOfLines={1}>{label}</Text>
       </View>
-      <View style={styles.sliderWrapper}>
+      <View style={styles.sliderWrapper} onLayout={onTrackLayout}>
         <View style={styles.track}>
           <Animated.View style={[styles.fill, fillStyle]} />
           <GestureDetector gesture={pan}>
@@ -84,21 +96,25 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: spacing.sm,
     paddingVertical: spacing.sm,
   },
   labelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    width: 120,
+    width: 110,
+    flexShrink: 0,
   },
   emoji: {
     fontSize: 18,
+    width: 24,
+    textAlign: 'center',
   },
   label: {
     ...typography.label,
     fontSize: 13,
+    flex: 1,
   },
   sliderWrapper: {
     flex: 1,
@@ -110,7 +126,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     borderRadius: radius.full,
     position: 'relative',
-    width: TRACK_WIDTH,
   },
   fill: {
     height: '100%',
@@ -138,5 +153,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     width: 32,
     textAlign: 'right',
+    flexShrink: 0,
   },
 })

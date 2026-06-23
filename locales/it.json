@@ -6,7 +6,9 @@
     "skip": "Salta",
     "loading": "Caricamento...",
     "error": "Qualcosa è andato storto",
-    "retry": "Riprova"
+    "retry": "Riprova",
+    "coming_soon": "In arrivo",
+    "soon": "presto"
   },
   "auth": {
     "welcome_title": "Benvenuto su Matchly",
@@ -24,8 +26,15 @@
     "already_account": "Hai già un account?",
     "no_account": "Non hai un account?",
     "passwords_no_match": "Le password non corrispondono",
+    "fill_email_password": "Inserisci email e password",
     "login_error": "Email o password non validi",
-    "signup_error": "Errore durante la registrazione"
+    "signup_error": "Errore durante la registrazione",
+    "check_email": "Registrazione ricevuta. Controlla la tua email per confermare l'account, poi torna qui e accedi.",
+    "invalid_email": "Inserisci un indirizzo email valido",
+    "login_required": "Devi accedere prima di completare il profilo",
+    "supabase_not_configured": "Supabase non è ancora configurato. Inserisci URL e anon key reali in .env.local, poi riavvia l'app.",
+    "social_coming_soon": "Google e Apple saranno collegati nel prossimo passaggio tecnico. Per ora usa email e password.",
+    "forgot_coming_soon": "Il recupero password sarà attivato insieme alla configurazione completa di Supabase Auth."
   },
   "onboarding": {
     "step": "{{current}} di {{total}}",
@@ -41,7 +50,10 @@
     "role_subtitle": "Il ruolo che preferisci giocare",
     "complete": "Inizia a giocare",
     "username_taken": "Username già in uso",
-    "select_sport": "Seleziona almeno uno sport"
+    "select_sport": "Seleziona almeno uno sport",
+    "fill_all_fields": "Compila tutti i campi obbligatori",
+    "add_photo": "Aggiungi foto",
+    "select_role": "Seleziona un ruolo per continuare"
   },
   "sports": {
     "calcetto": "Calcetto",
@@ -98,6 +110,8 @@
   },
   "profile": {
     "my_score": "Il mio score",
+    "my_stats": "Statistiche",
+    "logout_confirm": "Vuoi uscire dall'app?",
     "matches_played": "Partite giocate",
     "attendance": "Presenza",
     "my_bookings": "Le mie prenotazioni",

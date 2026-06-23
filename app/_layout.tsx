@@ -2,18 +2,22 @@ import '../lib/i18n'
 import 'react-native-reanimated'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useEffect } from 'react'
-import { router, Slot, SplashScreen } from 'expo-router'
+import { router, Slot, SplashScreen, useSegments } from 'expo-router'
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { StatusBar } from 'expo-status-bar'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../stores/authStore'
-import { StyleSheet } from 'react-native'
+import { Platform, StyleSheet } from 'react-native'
 
-SplashScreen.preventAutoHideAsync()
+if (Platform.OS !== 'web') {
+  SplashScreen.preventAutoHideAsync().catch(() => null)
+}
 
 export default function RootLayout() {
   const { setSession, setProfile, setStats, setLoading, isLoading } = useAuthStore()
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_600SemiBold,
     Inter_700Bold,
@@ -21,26 +25,30 @@ export default function RootLayout() {
 
   useEffect(() => {
     const loadSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setSession(session)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setSession(session)
 
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-        if (profile) setProfile(profile)
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          if (profile) setProfile(profile)
 
-        const { data: stats } = await supabase
-          .from('player_stats')
-          .select('*')
-          .eq('player_id', session.user.id)
-          .single()
-        if (stats) setStats(stats)
+          const { data: stats } = await supabase
+            .from('player_stats')
+            .select('*')
+            .eq('player_id', session.user.id)
+            .single()
+          if (stats) setStats(stats)
+        }
+      } catch {
+        // Supabase unreachable (e.g. no credentials configured) — treat as logged out
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     }
 
     loadSession()
@@ -72,31 +80,47 @@ export default function RootLayout() {
   }, [])
 
   useEffect(() => {
-    if (!fontsLoaded || isLoading) return
-    SplashScreen.hideAsync()
-  }, [fontsLoaded, isLoading])
+    if ((!fontsLoaded && !fontError) || isLoading) return
+    if (Platform.OS !== 'web') {
+      SplashScreen.hideAsync().catch(() => null)
+    }
+  }, [fontsLoaded, fontError, isLoading])
 
-  if (!fontsLoaded || isLoading) return null
+  if ((!fontsLoaded && !fontError) || isLoading) return null
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      <AuthGate />
+      <SafeAreaProvider>
+        <StatusBar style="dark" />
+        <AuthGate />
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   )
 }
 
 function AuthGate() {
   const { session, profile } = useAuthStore()
+  const segments = useSegments()
+  const activeGroup = segments[0]
 
   useEffect(() => {
+    const inAuthGroup = activeGroup === '(auth)'
+    const inOnboardingGroup = activeGroup === '(onboarding)'
+
     if (!session) {
-      router.replace('/(auth)/welcome')
-    } else if (!profile?.onboarding_completed) {
-      router.replace('/(onboarding)/profile')
-    } else {
+      if (!inAuthGroup) router.replace('/(auth)/welcome')
+      return
+    }
+
+    if (!profile?.onboarding_completed) {
+      if (!inOnboardingGroup) router.replace('/(onboarding)/profile')
+      return
+    }
+
+    if (inAuthGroup || inOnboardingGroup || !activeGroup) {
       router.replace('/(tabs)')
     }
-  }, [session, profile])
+  }, [session, profile?.onboarding_completed, activeGroup])
 
   return <Slot />
 }

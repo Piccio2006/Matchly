@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo-google-fonts/inter": "^0.2.3",
+    "@opentelemetry/api": "^1.9.1",
     "@supabase/supabase-js": "^2.45.4",
     "expo": "~51.0.28",
     "expo-auth-session": "~5.5.2",
@@ -38,7 +39,9 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "web:build": "expo export --platform web",
+    "web:preview": "npm run web:build && cd dist && python3 -m http.server 8081"
   },
   "private": true
 }
