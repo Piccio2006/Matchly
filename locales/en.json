@@ -1,0 +1,109 @@
+{
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "skip": "Skip",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry"
+  },
+  "auth": {
+    "welcome_title": "Welcome to Matchly",
+    "welcome_subtitle": "Book fields and find players near you",
+    "login": "Log in",
+    "signup": "Sign up",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Confirm password",
+    "forgot_password": "Forgot password?",
+    "or": "or",
+    "continue_google": "Continue with Google",
+    "continue_apple": "Continue with Apple",
+    "continue_email": "Continue with email",
+    "already_account": "Already have an account?",
+    "no_account": "Don't have an account?",
+    "passwords_no_match": "Passwords do not match",
+    "login_error": "Invalid email or password",
+    "signup_error": "Error during sign up"
+  },
+  "onboarding": {
+    "step": "{{current}} of {{total}}",
+    "profile_title": "Your profile",
+    "profile_subtitle": "What do they call you on the field?",
+    "full_name": "Full name",
+    "username": "Username",
+    "city": "Your city",
+    "sports_title": "Which sports do you play?",
+    "stats_title": "How do you rate yourself?",
+    "stats_subtitle": "Be honest — it helps find balanced matches",
+    "role_title": "What's your role?",
+    "role_subtitle": "The role you prefer to play",
+    "complete": "Start playing",
+    "username_taken": "Username already taken",
+    "select_sport": "Select at least one sport"
+  },
+  "sports": {
+    "calcetto": "5-a-side",
+    "calciotto": "8-a-side",
+    "padel": "Padel",
+    "tennis": "Tennis"
+  },
+  "roles": {
+    "portiere": "Goalkeeper",
+    "portiere_desc": "The guardian of the goal",
+    "difensore": "Defender",
+    "difensore_desc": "Solid and reliable in defense",
+    "centrocampista": "Midfielder",
+    "centrocampista_desc": "The engine of the team",
+    "attaccante": "Attacker",
+    "attaccante_desc": "Always hunting for the goal"
+  },
+  "stats": {
+    "velocita": "Speed",
+    "resistenza": "Stamina",
+    "tecnica": "Technique",
+    "fisico": "Physicality",
+    "senso_del_gol": "Finishing",
+    "fairplay": "Fair Play",
+    "leadership": "Leadership",
+    "carisma": "Charisma"
+  },
+  "tabs": {
+    "home": "Home",
+    "booking": "Book",
+    "match": "Match",
+    "profile": "Profile"
+  },
+  "home": {
+    "greeting_morning": "Good morning",
+    "greeting_afternoon": "Good afternoon",
+    "greeting_evening": "Good evening",
+    "fields_nearby": "Fields near you",
+    "offers_today": "Today's offers",
+    "coming_soon": "Coming soon"
+  },
+  "booking": {
+    "title": "Book a field",
+    "coming_soon": "Under construction",
+    "subtitle": "Soon you'll be able to book fields near you"
+  },
+  "match": {
+    "coming_soon_title": "Matchmaking is coming",
+    "coming_soon_subtitle": "Soon you'll find players and matches near you",
+    "waitlist_placeholder": "Your email",
+    "waitlist_cta": "Notify me at launch",
+    "waitlist_success": "You're on the list! We'll notify you right away.",
+    "waitlist_count": "{{count}} players already on the list"
+  },
+  "profile": {
+    "my_score": "My score",
+    "matches_played": "Matches played",
+    "attendance": "Attendance",
+    "my_bookings": "My bookings",
+    "match_history": "Match history",
+    "settings": "Settings",
+    "logout": "Log out",
+    "bookings_placeholder": "Your bookings will appear here"
+  }
+}

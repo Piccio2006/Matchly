@@ -1,0 +1,109 @@
+{
+  "common": {
+    "continue": "Continua",
+    "back": "Indietro",
+    "save": "Salva",
+    "skip": "Salta",
+    "loading": "Caricamento...",
+    "error": "Qualcosa è andato storto",
+    "retry": "Riprova"
+  },
+  "auth": {
+    "welcome_title": "Benvenuto su Matchly",
+    "welcome_subtitle": "Prenota campi e trova giocatori vicino a te",
+    "login": "Accedi",
+    "signup": "Registrati",
+    "email": "Email",
+    "password": "Password",
+    "confirm_password": "Conferma password",
+    "forgot_password": "Password dimenticata?",
+    "or": "oppure",
+    "continue_google": "Continua con Google",
+    "continue_apple": "Continua con Apple",
+    "continue_email": "Continua con email",
+    "already_account": "Hai già un account?",
+    "no_account": "Non hai un account?",
+    "passwords_no_match": "Le password non corrispondono",
+    "login_error": "Email o password non validi",
+    "signup_error": "Errore durante la registrazione"
+  },
+  "onboarding": {
+    "step": "{{current}} di {{total}}",
+    "profile_title": "Il tuo profilo",
+    "profile_subtitle": "Come ti chiamano in campo?",
+    "full_name": "Nome e cognome",
+    "username": "Username",
+    "city": "La tua città",
+    "sports_title": "Che sport pratichi?",
+    "stats_title": "Come ti valuti?",
+    "stats_subtitle": "Sii onesto — serve per trovare partite equilibrate",
+    "role_title": "Qual è il tuo ruolo?",
+    "role_subtitle": "Il ruolo che preferisci giocare",
+    "complete": "Inizia a giocare",
+    "username_taken": "Username già in uso",
+    "select_sport": "Seleziona almeno uno sport"
+  },
+  "sports": {
+    "calcetto": "Calcetto",
+    "calciotto": "Calciotto",
+    "padel": "Padel",
+    "tennis": "Tennis"
+  },
+  "roles": {
+    "portiere": "Portiere",
+    "portiere_desc": "Il guardiano della porta",
+    "difensore": "Difensore",
+    "difensore_desc": "Solido e affidabile in difesa",
+    "centrocampista": "Centrocampista",
+    "centrocampista_desc": "Il motore della squadra",
+    "attaccante": "Attaccante",
+    "attaccante_desc": "Sempre a caccia del gol"
+  },
+  "stats": {
+    "velocita": "Velocità",
+    "resistenza": "Resistenza",
+    "tecnica": "Tecnica",
+    "fisico": "Fisico",
+    "senso_del_gol": "Senso del gol",
+    "fairplay": "Fairplay",
+    "leadership": "Leadership",
+    "carisma": "Carisma"
+  },
+  "tabs": {
+    "home": "Home",
+    "booking": "Prenota",
+    "match": "Match",
+    "profile": "Profilo"
+  },
+  "home": {
+    "greeting_morning": "Buongiorno",
+    "greeting_afternoon": "Buon pomeriggio",
+    "greeting_evening": "Buonasera",
+    "fields_nearby": "Campi vicino a te",
+    "offers_today": "Offerte del giorno",
+    "coming_soon": "Prossimamente"
+  },
+  "booking": {
+    "title": "Prenota un campo",
+    "coming_soon": "In costruzione",
+    "subtitle": "Presto potrai prenotare campi vicino a te"
+  },
+  "match": {
+    "coming_soon_title": "Il matchmaking sta arrivando",
+    "coming_soon_subtitle": "Presto potrai trovare giocatori e partite vicino a te",
+    "waitlist_placeholder": "La tua email",
+    "waitlist_cta": "Avvisami al lancio",
+    "waitlist_success": "Sei in lista! Ti avviseremo subito.",
+    "waitlist_count": "{{count}} giocatori già in lista"
+  },
+  "profile": {
+    "my_score": "Il mio score",
+    "matches_played": "Partite giocate",
+    "attendance": "Presenza",
+    "my_bookings": "Le mie prenotazioni",
+    "match_history": "Storico partite",
+    "settings": "Impostazioni",
+    "logout": "Esci",
+    "bookings_placeholder": "Le tue prenotazioni appariranno qui"
+  }
+}
