@@ -2,7 +2,7 @@ import '../lib/i18n'
 import 'react-native-reanimated'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { useEffect } from 'react'
-import { router, Slot, SplashScreen, useSegments } from 'expo-router'
+import { router, Stack, SplashScreen, useSegments } from 'expo-router'
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
@@ -122,7 +122,17 @@ function AuthGate() {
     }
   }, [session, profile?.onboarding_completed, activeGroup])
 
-  return <Slot />
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(onboarding)" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="field/[id]" />
+      <Stack.Screen name="booking/checkout" />
+      <Stack.Screen name="booking/confirmation" />
+      <Stack.Screen name="bookings/index" />
+    </Stack>
+  )
 }
 
 const styles = StyleSheet.create({

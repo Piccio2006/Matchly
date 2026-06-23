@@ -57,3 +57,82 @@ export interface StatKey {
   labelEn: string
   emoji: string
 }
+
+// ============================================================
+// Blocco 2: Booking
+// ============================================================
+
+// Alias allineato alla spec del Blocco 2 (equivalente a `Sport`)
+export type SportType = Sport
+
+export interface SportField {
+  id: string
+  name: string
+  address: string
+  city: string
+  sport_types: SportType[]
+  price_per_slot: number
+  slot_duration_minutes: number
+  photos: string[]
+  description?: string
+  surface_type?: string
+  amenities: string[]
+  max_players: number
+  rating_avg: number
+  rating_count: number
+  latitude?: number
+  longitude?: number
+  is_active: boolean
+  created_at: string
+}
+
+export interface FieldSlot {
+  id: string
+  field_id: string
+  date: string
+  start_time: string
+  end_time: string
+  is_available: boolean
+  price_override?: number
+  discount_percent: number
+  discount_expires_at?: string
+}
+
+export type BookingStatus = 'confirmed' | 'cancelled' | 'completed' | 'no_show'
+
+export interface Booking {
+  id: string
+  booking_code: string
+  field_id: string
+  user_id: string
+  slot_id: string
+  sport: SportType
+  date: string
+  start_time: string
+  end_time: string
+  price_paid: number
+  commission_amount: number
+  discount_applied: number
+  status: BookingStatus
+  payment_intent_id?: string
+  payment_method?: string
+  cancelled_at?: string
+  refund_amount?: number
+  notes?: string
+  created_at: string
+  // join
+  sports_fields?: SportField
+}
+
+export interface FieldReview {
+  id: string
+  booking_id: string
+  field_id: string
+  user_id: string
+  rating_surface: number
+  rating_facilities: number
+  rating_structure: number
+  rating_value: number
+  comment?: string
+  created_at: string
+}

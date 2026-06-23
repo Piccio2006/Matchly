@@ -1,13 +1,17 @@
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native'
+import { router, useFocusEffect } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Avatar } from '../../components/ui/Avatar'
 import { MatchlyScoreBadge } from '../../components/features/profile/MatchlyScoreBadge'
+import { BookingItem } from '../../components/features/booking/BookingItem'
 import { useUser } from '../../hooks/useUser'
 import { useAuth } from '../../hooks/useAuth'
+import { supabase } from '../../lib/supabase'
+import { useAuthStore } from '../../stores/authStore'
 import { colors, spacing, typography, radius } from '../../lib/theme'
-import { Level } from '../../types'
+import { Booking, Level } from '../../types'
 
 const STAT_KEYS = ['velocita', 'resistenza', 'tecnica', 'fisico'] as const
 const STAT_EMOJIS: Record<string, string> = {
@@ -21,7 +25,30 @@ export default function ProfileScreen() {
   const { t } = useTranslation()
   const { profile, stats } = useUser()
   const { signOut } = useAuth()
+  const { session } = useAuthStore()
   const insets = useSafeAreaInsets()
+
+  const [bookings, setBookings] = useState<(Booking & { sports_fields?: { name: string } })[]>([])
+
+  // Ricarica le prenotazioni a ogni focus (es. dopo aver prenotato)
+  useFocusEffect(
+    useCallback(() => {
+      if (!session?.user) return
+      let active = true
+      supabase
+        .from('bookings')
+        .select('*, sports_fields(name)')
+        .eq('user_id', session.user.id)
+        .order('date', { ascending: false })
+        .limit(3)
+        .then(({ data }) => {
+          if (active) setBookings((data as never) ?? [])
+        })
+      return () => {
+        active = false
+      }
+    }, [session?.user?.id])
+  )
 
   const attendance =
     stats && stats.total_matches > 0
@@ -88,10 +115,25 @@ export default function ProfileScreen() {
       )}
 
       <View style={styles.bookingsSection}>
-        <Text style={styles.sectionLabel}>{t('profile.my_bookings')}</Text>
-        <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>{t('profile.bookings_placeholder')}</Text>
+        <View style={styles.bookingsHeader}>
+          <Text style={styles.sectionLabel}>{t('booking.my_bookings')}</Text>
+          {bookings.length > 0 ? (
+            <Pressable onPress={() => router.push('/bookings' as never)}>
+              <Text style={styles.seeAll}>{t('booking.see_all')}</Text>
+            </Pressable>
+          ) : null}
         </View>
+        {bookings.length > 0 ? (
+          <View style={styles.bookingsList}>
+            {bookings.map((b) => (
+              <BookingItem key={b.id} booking={b} />
+            ))}
+          </View>
+        ) : (
+          <View style={styles.placeholder}>
+            <Text style={styles.placeholderText}>{t('booking.no_bookings')}</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.menuSection}>
@@ -147,6 +189,9 @@ const styles = StyleSheet.create({
   },
   statValue: { ...typography.label, color: colors.primary, width: 28, textAlign: 'right' },
   bookingsSection: { gap: spacing.sm },
+  bookingsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  seeAll: { ...typography.label, color: colors.primary, fontSize: 13 },
+  bookingsList: { gap: spacing.sm },
   placeholder: {
     padding: spacing.lg,
     backgroundColor: colors.surface,
