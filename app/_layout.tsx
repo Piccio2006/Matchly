@@ -139,6 +139,7 @@ function AuthGate() {
       <Stack.Screen name="leaderboard" />
       <Stack.Screen name="match-history" />
       <Stack.Screen name="settings" />
+      <Stack.Screen name="favorites" />
     </Stack>
   )
 }
