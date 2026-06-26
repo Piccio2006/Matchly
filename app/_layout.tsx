@@ -1,6 +1,7 @@
 import '../lib/i18n'
 import 'react-native-reanimated'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { ErrorBoundary } from '../components/ui/ErrorBoundary'
 import { useEffect } from 'react'
 import { router, Stack, SplashScreen, useSegments } from 'expo-router'
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter'
@@ -89,12 +90,14 @@ export default function RootLayout() {
   if ((!fontsLoaded && !fontError) || isLoading) return null
 
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <SafeAreaProvider>
-        <StatusBar style="dark" />
-        <AuthGate />
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={styles.root}>
+        <SafeAreaProvider>
+          <StatusBar style="dark" />
+          <AuthGate />
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   )
 }
 
@@ -130,7 +133,12 @@ function AuthGate() {
       <Stack.Screen name="field/[id]" />
       <Stack.Screen name="booking/checkout" />
       <Stack.Screen name="booking/confirmation" />
+      <Stack.Screen name="booking/review" />
       <Stack.Screen name="bookings/index" />
+      <Stack.Screen name="notifications" />
+      <Stack.Screen name="leaderboard" />
+      <Stack.Screen name="match-history" />
+      <Stack.Screen name="settings" />
     </Stack>
   )
 }
