@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { computeSlotPrice, sportEmoji, formatTime } from '../../lib/booking'
 import { colors, radius, spacing, typography } from '../../lib/theme'
-import { SportField, FieldSlot } from '../../types'
+import { SportField, FieldSlot, FieldReview } from '../../types'
 
 const AMENITY_EMOJI: Record<string, string> = {
   spogliatoi: '🚪',
@@ -36,6 +36,7 @@ export default function FieldDetailScreen() {
 
   const [field, setField] = useState<SportField | null>(null)
   const [slots, setSlots] = useState<FieldSlot[]>([])
+  const [reviews, setReviews] = useState<FieldReview[]>([])
   const [loading, setLoading] = useState(true)
   const [slotsLoading, setSlotsLoading] = useState(false)
 
@@ -45,8 +46,12 @@ export default function FieldDetailScreen() {
   useEffect(() => {
     const load = async () => {
       try {
-        const { data } = await supabase.from('sports_fields').select('*').eq('id', id).single()
-        setField((data as SportField) ?? null)
+        const [fieldRes, reviewsRes] = await Promise.all([
+          supabase.from('sports_fields').select('*').eq('id', id).single(),
+          supabase.from('field_reviews').select('*').eq('field_id', id).order('created_at', { ascending: false }).limit(10),
+        ])
+        setField((fieldRes.data as SportField) ?? null)
+        setReviews((reviewsRes.data as FieldReview[]) ?? [])
       } finally {
         setLoading(false)
       }
@@ -211,14 +216,28 @@ export default function FieldDetailScreen() {
           </View>
         )}
 
-        {/* Reviews placeholder — TODO(Codex): caricare field_reviews reali via join */}
         <Text style={styles.sectionTitle}>{t('booking.reviews_count', { count: field.rating_count })}</Text>
-        <View style={styles.reviewCard}>
-          <Text style={styles.reviewStars}>⭐⭐⭐⭐⭐</Text>
-          <Text style={styles.reviewText}>
-            "Campo ben tenuto, spogliatoi puliti. Torneremo!"
-          </Text>
-        </View>
+        {reviews.length === 0 ? (
+          <Text style={styles.empty}>{t('booking.no_slots').replace('slot', 'recensioni')}</Text>
+        ) : (
+          reviews.map((review) => {
+            const avg = ((review.rating_surface + review.rating_facilities + review.rating_structure + review.rating_value) / 4).toFixed(1)
+            return (
+              <View key={review.id} style={styles.reviewCard}>
+                <View style={styles.reviewHeader}>
+                  <Text style={styles.reviewStars}>{'⭐'.repeat(Math.round(parseFloat(avg)))}</Text>
+                  <Text style={styles.reviewScore}>{avg}</Text>
+                </View>
+                {review.comment ? (
+                  <Text style={styles.reviewText}>"{review.comment}"</Text>
+                ) : null}
+                <Text style={styles.reviewDate}>
+                  {new Date(review.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </Text>
+              </View>
+            )
+          })
+        )}
       </View>
     </ScrollView>
   )
@@ -308,6 +327,9 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     marginTop: spacing.sm,
   },
-  reviewStars: { fontSize: 14 },
+  reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  reviewStars: { fontSize: 14, flex: 1 },
+  reviewScore: { ...typography.label, color: colors.primary },
   reviewText: { ...typography.bodySmall, fontStyle: 'italic' },
+  reviewDate: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs },
 })

@@ -17,7 +17,7 @@ import { colors, radius, spacing, typography } from '../../lib/theme'
 import { SportField, SportType } from '../../types'
 
 const SPORT_FILTERS: (SportType | 'all')[] = ['all', 'calcetto', 'padel', 'tennis', 'calciotto']
-const PRICE_OPTIONS = [60, 35, 25] // €max selezionabili
+const PRICE_OPTIONS: Array<number | null> = [null, 60, 35, 25] // null = tutti i prezzi
 
 function SkeletonCard() {
   const opacity = useSharedValue(0.4)
@@ -42,7 +42,8 @@ export default function BookingScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [search, setSearch] = useState('')
   const [sport, setSport] = useState<SportType | 'all'>('all')
-  const [maxPrice, setMaxPrice] = useState(60)
+  const [maxPrice, setMaxPrice] = useState<number | null>(null)
+  const [onlyOffers, setOnlyOffers] = useState(false)
 
   // Determina quali campi hanno almeno uno slot scontato disponibile oggi.
   const loadOffers = async (list: SportField[]) => {
@@ -94,7 +95,8 @@ export default function BookingScreen() {
     const q = search.trim().toLowerCase()
     return fields
       .filter((f) => (sport === 'all' ? true : f.sport_types.includes(sport)))
-      .filter((f) => f.price_per_slot <= maxPrice)
+      .filter((f) => maxPrice === null || f.price_per_slot <= maxPrice)
+      .filter((f) => !onlyOffers || offerFieldIds.has(f.id))
       .filter((f) =>
         q ? f.name.toLowerCase().includes(q) || f.address.toLowerCase().includes(q) : true
       )
@@ -106,7 +108,7 @@ export default function BookingScreen() {
           approxDistanceKm(FIRENZE_CENTER.latitude, FIRENZE_CENTER.longitude, b.latitude, b.longitude) ?? 999
         return da - db
       })
-  }, [fields, search, sport, maxPrice])
+  }, [fields, search, sport, maxPrice, onlyOffers, offerFieldIds])
 
   return (
     <ScrollView
@@ -165,11 +167,16 @@ export default function BookingScreen() {
         {PRICE_OPTIONS.map((p) => {
           const active = maxPrice === p
           return (
-            <Pressable key={p} onPress={() => setMaxPrice(p)} style={[styles.chip, active && styles.chipActive]}>
-              <Text style={[styles.chipText, active && styles.chipTextActive]}>≤ €{p}</Text>
+            <Pressable key={p ?? 'all'} onPress={() => setMaxPrice(p)} style={[styles.chip, active && styles.chipActive]}>
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                {p === null ? 'Tutti i prezzi' : `≤ €${p}`}
+              </Text>
             </Pressable>
           )
         })}
+        <Pressable onPress={() => setOnlyOffers((v) => !v)} style={[styles.chip, onlyOffers && styles.chipOffer]}>
+          <Text style={[styles.chipText, onlyOffers && styles.chipTextActive]}>🏷️ Solo offerte</Text>
+        </Pressable>
       </ScrollView>
 
       {loading ? (
@@ -229,6 +236,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  chipOffer: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipText: { ...typography.bodySmall, color: colors.textPrimary, fontFamily: 'Inter_600SemiBold' },
   chipTextActive: { color: '#fff' },
   results: { ...typography.label, color: colors.textSecondary, marginTop: spacing.xs },
