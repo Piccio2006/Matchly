@@ -18,6 +18,7 @@ import { colors, spacing, typography, radius } from '../../lib/theme'
 import { SportField, FieldSlot } from '../../types'
 
 type SlotWithField = FieldSlot & { sports_fields: SportField }
+type CampoDelGiorno = { field: SportField; availableSlots: number }
 
 function SkeletonCard() {
   const opacity = useSharedValue(0.4)
@@ -49,6 +50,7 @@ export default function HomeScreen() {
 
   const [fields, setFields] = useState<SportField[]>([])
   const [offers, setOffers] = useState<SlotWithField[]>([])
+  const [campoDelGiorno, setCampoDelGiorno] = useState<CampoDelGiorno | null>(null)
   const [loading, setLoading] = useState(true)
 
   const firstName = profile?.full_name?.split(' ')[0]
@@ -61,7 +63,7 @@ export default function HomeScreen() {
 
     const loadData = async () => {
       try {
-        const [fieldsRes, offersRes] = await Promise.all([
+        const [fieldsRes, offersRes, campoRes] = await Promise.all([
           supabase
             .from('sports_fields')
             .select('*')
@@ -75,9 +77,29 @@ export default function HomeScreen() {
             .gt('discount_percent', 0)
             .eq('is_available', true)
             .limit(5),
+          supabase
+            .from('field_slots')
+            .select('field_id, sports_fields!inner(*)')
+            .eq('date', today)
+            .eq('is_available', true)
+            .order('sports_fields(rating_avg)', { ascending: false })
+            .limit(10),
         ])
         setFields((fieldsRes.data as SportField[]) ?? [])
         setOffers((offersRes.data as SlotWithField[]) ?? [])
+
+        // Campo del giorno: field with most available slots today
+        if (campoRes.data && campoRes.data.length > 0) {
+          const countMap = new Map<string, { field: SportField; count: number }>()
+          for (const row of campoRes.data as any[]) {
+            const f = row.sports_fields as SportField
+            const entry = countMap.get(f.id) ?? { field: f, count: 0 }
+            entry.count++
+            countMap.set(f.id, entry)
+          }
+          const best = Array.from(countMap.values()).sort((a, b) => b.field.rating_avg - a.field.rating_avg)[0]
+          if (best) setCampoDelGiorno({ field: best.field, availableSlots: best.count })
+        }
       } finally {
         setLoading(false)
       }
@@ -109,6 +131,23 @@ export default function HomeScreen() {
           </Pressable>
         </View>
       </View>
+
+      {/* Campo del giorno */}
+      {!loading && campoDelGiorno && (
+        <Pressable
+          style={styles.campoDelGiorno}
+          onPress={() => router.push({ pathname: '/field/[id]', params: { id: campoDelGiorno.field.id } } as never)}
+        >
+          <View style={styles.campoDelGiornoLeft}>
+            <Text style={styles.campoDelGiornoLabel}>🏆 Campo del giorno</Text>
+            <Text style={styles.campoDelGiornoName} numberOfLines={1}>{campoDelGiorno.field.name}</Text>
+            <Text style={styles.campoDelGiornoMeta}>
+              ⭐ {campoDelGiorno.field.rating_avg.toFixed(1)} · {campoDelGiorno.availableSlots} slot oggi
+            </Text>
+          </View>
+          <Text style={styles.campoDelGiornoArrow}>›</Text>
+        </Pressable>
+      )}
 
       {/* Campi vicino a te */}
       <View style={styles.section}>
@@ -265,4 +304,19 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
   },
   offerBadgeText: { ...typography.caption, color: '#fff', fontFamily: 'Inter_600SemiBold' },
+  campoDelGiorno: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primaryLight,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: colors.primary + '40',
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  campoDelGiornoLeft: { flex: 1, gap: 2 },
+  campoDelGiornoLabel: { ...typography.caption, color: colors.primary, fontFamily: 'Inter_600SemiBold', textTransform: 'uppercase', letterSpacing: 0.5 },
+  campoDelGiornoName: { ...typography.label, fontSize: 16 },
+  campoDelGiornoMeta: { ...typography.caption, color: colors.textSecondary },
+  campoDelGiornoArrow: { fontSize: 24, color: colors.primary, fontFamily: 'Inter_700Bold' },
 })
