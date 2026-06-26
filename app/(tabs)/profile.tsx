@@ -13,12 +13,16 @@ import { useAuthStore } from '../../stores/authStore'
 import { colors, spacing, typography, radius } from '../../lib/theme'
 import { Booking, Level } from '../../types'
 
-const STAT_KEYS = ['velocita', 'resistenza', 'tecnica', 'fisico'] as const
+const STAT_KEYS = ['velocita', 'resistenza', 'tecnica', 'fisico', 'senso_del_gol', 'fairplay', 'leadership', 'carisma'] as const
 const STAT_EMOJIS: Record<string, string> = {
   velocita: '⚡',
   resistenza: '🫀',
   tecnica: '🎯',
   fisico: '💪',
+  senso_del_gol: '⚽',
+  fairplay: '🤝',
+  leadership: '👑',
+  carisma: '✨',
 }
 
 export default function ProfileScreen() {
@@ -137,12 +141,12 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.menuSection}>
-        <Pressable style={styles.menuItem}>
+        <Pressable style={styles.menuItem} onPress={() => router.push('/match-history' as never)}>
           <Text style={styles.menuIcon}>📊</Text>
           <Text style={styles.menuLabel}>{t('profile.match_history')}</Text>
           <Text style={styles.chevron}>›</Text>
         </Pressable>
-        <Pressable style={styles.menuItem}>
+        <Pressable style={styles.menuItem} onPress={() => router.push('/settings' as never)}>
           <Text style={styles.menuIcon}>⚙️</Text>
           <Text style={styles.menuLabel}>{t('profile.settings')}</Text>
           <Text style={styles.chevron}>›</Text>
