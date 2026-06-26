@@ -8,7 +8,6 @@ import { supabase } from '../../lib/supabase'
 import {
   computeSlotPrice,
   computeCommission,
-  generateBookingCode,
   mockPayment,
   sportEmoji,
   formatTime,
@@ -79,45 +78,32 @@ export default function CheckoutScreen() {
       // 1. Mock pagamento (TODO: Stripe reale)
       const { paymentIntentId } = await mockPayment()
 
-      // 2. Re-check disponibilità slot (race condition)
-      const { data: fresh } = await supabase
-        .from('field_slots')
-        .select('is_available')
-        .eq('id', slot.id)
-        .single()
-      if (!fresh || fresh.is_available === false) {
+      // 2. Prenota slot atomicamente via RPC (risolve race condition)
+      const commission = computeCommission(finalPrice)
+      const { data: rpcResult, error: rpcErr } = await supabase.rpc('book_slot', {
+        p_field_id: field.id,
+        p_slot_id: slot.id,
+        p_user_id: session.user.id,
+        p_sport: sport,
+        p_date: params.date,
+        p_start_time: params.startTime,
+        p_end_time: params.endTime,
+        p_price_paid: finalPrice,
+        p_commission: commission,
+        p_discount: discountPercent,
+        p_payment_id: paymentIntentId,
+        p_payment_method: 'card',
+      })
+
+      if (rpcErr) throw rpcErr
+      const result = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult
+      if (result?.error_code === 'slot_taken') {
         setError(t('booking.slot_taken_error'))
         setPaying(false)
         return
       }
-
-      // 3. Crea la prenotazione
-      const commission = computeCommission(finalPrice)
-      const code = generateBookingCode()
-      const { data: booking, error: insErr } = await supabase
-        .from('bookings')
-        .insert({
-          booking_code: code,
-          field_id: field.id,
-          user_id: session.user.id,
-          slot_id: slot.id,
-          sport,
-          date: params.date,
-          start_time: params.startTime,
-          end_time: params.endTime,
-          price_paid: finalPrice,
-          commission_amount: commission,
-          discount_applied: discountPercent,
-          status: 'confirmed',
-          payment_intent_id: paymentIntentId,
-          payment_method: 'card',
-        })
-        .select('id')
-        .single()
-      if (insErr || !booking) throw insErr ?? new Error('insert failed')
-
-      // 4. Marca lo slot come occupato
-      await supabase.from('field_slots').update({ is_available: false }).eq('id', slot.id)
+      if (!result?.booking_id) throw new Error('booking failed')
+      const booking = { id: result.booking_id as string }
 
       // 5. Vai alla conferma
       router.replace({ pathname: '/booking/confirmation', params: { bookingId: booking.id } } as never)
