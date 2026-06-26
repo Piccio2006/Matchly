@@ -141,6 +141,11 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.menuSection}>
+        <Pressable style={styles.menuItem} onPress={() => router.push('/leaderboard' as never)}>
+          <Text style={styles.menuIcon}>🏆</Text>
+          <Text style={styles.menuLabel}>Classifica giocatori</Text>
+          <Text style={styles.chevron}>›</Text>
+        </Pressable>
         <Pressable style={styles.menuItem} onPress={() => router.push('/match-history' as never)}>
           <Text style={styles.menuIcon}>📊</Text>
           <Text style={styles.menuLabel}>{t('profile.match_history')}</Text>
