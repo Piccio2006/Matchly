@@ -120,7 +120,7 @@ export default function FieldDetailScreen() {
       <View style={styles.body}>
         <View style={styles.titleRow}>
           <Text style={styles.name}>{field.name}</Text>
-          <Text style={styles.rating}>⭐ {field.rating_avg.toFixed(1)}</Text>
+          <Text style={styles.rating}>⭐ {(field.rating_avg ?? 0).toFixed(1)}</Text>
         </View>
         <Text style={styles.address}>📍 {field.address}</Text>
         <View style={styles.tagRow}>

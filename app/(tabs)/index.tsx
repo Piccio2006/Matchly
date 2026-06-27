@@ -97,7 +97,7 @@ export default function HomeScreen() {
             entry.count++
             countMap.set(f.id, entry)
           }
-          const best = Array.from(countMap.values()).sort((a, b) => b.field.rating_avg - a.field.rating_avg)[0]
+          const best = Array.from(countMap.values()).sort((a, b) => (b.field.rating_avg ?? 0) - (a.field.rating_avg ?? 0))[0]
           if (best) setCampoDelGiorno({ field: best.field, availableSlots: best.count })
         }
       } finally {
@@ -142,7 +142,7 @@ export default function HomeScreen() {
             <Text style={styles.campoDelGiornoLabel}>🏆 Campo del giorno</Text>
             <Text style={styles.campoDelGiornoName} numberOfLines={1}>{campoDelGiorno.field.name}</Text>
             <Text style={styles.campoDelGiornoMeta}>
-              ⭐ {campoDelGiorno.field.rating_avg.toFixed(1)} · {campoDelGiorno.availableSlots} slot oggi
+              ⭐ {(campoDelGiorno.field.rating_avg ?? 0).toFixed(1)} · {campoDelGiorno.availableSlots} slot oggi
             </Text>
           </View>
           <Text style={styles.campoDelGiornoArrow}>›</Text>

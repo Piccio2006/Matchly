@@ -97,7 +97,14 @@ Applicare nell'ordine:
 
 -- 3. Tabella preferiti
 \i supabase/schema_favorites.sql
+
+-- 4. RPC atomica cancel_booking (annulla + rilibera lo slot)
+\i supabase/rpc_cancel_booking.sql
 ```
+
+> **Bugfix:** `cancel_booking` risolve un bug per cui annullare una
+> prenotazione lasciava lo slot `is_available = FALSE` (slot perso per
+> sempre). Ora la cancellazione rilibera atomicamente lo slot.
 
 ---
 

@@ -37,7 +37,13 @@ export default function LeaderboardScreen() {
       .order('matchly_score', { ascending: false })
       .limit(50)
       .then(({ data }) => {
-        setEntries((data as LeaderEntry[]) ?? [])
+        const rows = (data ?? []).map((row: Record<string, unknown>) => {
+          const p = row.profiles
+          // Supabase returns the joined relation as an array — normalize to a single object
+          const profile = Array.isArray(p) ? (p[0] ?? null) : (p ?? null)
+          return { ...row, profiles: profile } as LeaderEntry
+        })
+        setEntries(rows)
         setLoading(false)
       })
   }, [])
@@ -77,9 +83,9 @@ export default function LeaderboardScreen() {
                   {username ? <Text style={styles.username}>{username}</Text> : null}
                 </View>
                 <View style={styles.scoreWrap}>
-                  <Text style={styles.levelEmoji}>{LEVEL_EMOJI[entry.level]}</Text>
-                  <Text style={styles.score}>{entry.matchly_score.toFixed(1)}</Text>
-                  <Text style={styles.matches}>{entry.total_matches} partite</Text>
+                  <Text style={styles.levelEmoji}>{LEVEL_EMOJI[entry.level] ?? '🥉'}</Text>
+                  <Text style={styles.score}>{(entry.matchly_score ?? 0).toFixed(1)}</Text>
+                  <Text style={styles.matches}>{entry.total_matches ?? 0} partite</Text>
                 </View>
               </View>
             )

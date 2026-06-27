@@ -43,7 +43,11 @@ export default function NotificationsScreen() {
 
   const markRead = async (id: string) => {
     setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n))
-    await supabase.from('notifications').update({ read: true }).eq('id', id).catch(() => {})
+    try {
+      await supabase.from('notifications').update({ read: true }).eq('id', id)
+    } catch {
+      // best-effort: optimistic UI already updated
+    }
   }
 
   return (

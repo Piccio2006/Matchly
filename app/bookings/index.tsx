@@ -59,16 +59,19 @@ export default function AllBookingsScreen() {
           style: 'destructive',
           onPress: async () => {
             setCancelling(b.id)
-            const { error } = await supabase
-              .from('bookings')
-              .update({ status: 'cancelled' })
-              .eq('id', b.id)
-              .eq('user_id', session!.user.id)
+            // RPC atomica: annulla la prenotazione E rilibera lo slot
+            const { data, error } = await supabase.rpc('cancel_booking', {
+              p_booking_id: b.id,
+              p_user_id: session!.user.id,
+            })
             setCancelling(null)
-            if (!error) {
+            const result = Array.isArray(data) ? data[0] : data
+            if (!error && result?.ok) {
               setBookings((prev) =>
                 prev.map((x) => x.id === b.id ? { ...x, status: 'cancelled' } : x)
               )
+            } else {
+              Alert.alert('Errore', 'Non è stato possibile annullare la prenotazione. Riprova.')
             }
           },
         },

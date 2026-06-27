@@ -142,10 +142,12 @@ export default function CheckoutScreen() {
             <Text style={styles.priceLabel}>{t('booking.price_slot')}</Text>
             <Text style={styles.priceValue}>€{basePrice.toFixed(2)}</Text>
           </View>
-          <View style={styles.priceRow}>
-            <Text style={styles.priceLabel}>{t('booking.discount', { percent: discountPercent })}</Text>
-            <Text style={styles.priceValue}>-€{(basePrice - finalPrice).toFixed(2)}</Text>
-          </View>
+          {discountPercent > 0 && (
+            <View style={styles.priceRow}>
+              <Text style={styles.priceLabel}>{t('booking.discount', { percent: discountPercent })}</Text>
+              <Text style={styles.priceValue}>-€{(basePrice - finalPrice).toFixed(2)}</Text>
+            </View>
+          )}
           <View style={styles.divider} />
           <View style={styles.priceRow}>
             <Text style={styles.totalLabel}>{t('booking.total')}</Text>

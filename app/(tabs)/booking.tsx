@@ -101,7 +101,9 @@ export default function BookingScreen() {
         q ? f.name.toLowerCase().includes(q) || f.address.toLowerCase().includes(q) : true
       )
       .sort((a, b) => {
-        if (b.rating_avg !== a.rating_avg) return b.rating_avg - a.rating_avg
+        const ra = a.rating_avg ?? 0
+        const rb = b.rating_avg ?? 0
+        if (rb !== ra) return rb - ra
         const da =
           approxDistanceKm(FIRENZE_CENTER.latitude, FIRENZE_CENTER.longitude, a.latitude, a.longitude) ?? 999
         const db =

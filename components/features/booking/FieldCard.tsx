@@ -62,7 +62,7 @@ export function FieldCard({ field, onPress, hasOffer = false }: FieldCardProps) 
         </Text>
         <View style={styles.metaRow}>
           <Text style={styles.rating}>
-            ⭐ {field.rating_avg.toFixed(1)} ({field.rating_count})
+            ⭐ {(field.rating_avg ?? 0).toFixed(1)} ({field.rating_count ?? 0})
           </Text>
           {distance != null ? <Text style={styles.distance}>📍 {distance} km</Text> : null}
         </View>
